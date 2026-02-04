@@ -46,7 +46,10 @@ class ResourceResults extends HTMLElement {
     // a) ensure the attr changed is 'source' (in more complex cases, we might be monitoring multiple attributes)
     // b) don't re-fetch data if the source URL didn't change
     if (name === 'source' && oldVal != newVal) {
-      this.#fetchData(newVal);
+      // check if component is connected: https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
+      if (this.isConnected) {
+        this.#fetchData(newVal);
+      }
     }
   }
 
@@ -54,10 +57,18 @@ class ResourceResults extends HTMLElement {
 
 
   async #fetchData(url) {
-    // TODO: Stage 2: When `source` changes:
-    // - fetch(source)
-    // - handle loading and error states
-    // - set results with fetched data
+    try {
+      const response = await fetch(url);
+      // response.ok is a boolean: HTTP Response status code is 200, i.e. request successfully fulfilled
+      if (!response.ok) {
+        throw new Error(`Network response failed: ${response.statusText}`);
+      }
+      // if response status code *was* OK (i.e. 200), we can retrieve our data from it:
+      const data = await response.json();
+      this.results = data; // note: we're using this.results, not this.#results — why do you think that is?
+    } catch (error) {
+      console.error('Failed to get data: ', error);
+    }
   }
 
   set results(data) {
