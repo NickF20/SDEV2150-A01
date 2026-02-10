@@ -24,6 +24,8 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // add a linting rule to 'always' yell at me if I miss semicolons where they """should""" be
+      semi: ['error', 'always'],
     },
   },
 ])
